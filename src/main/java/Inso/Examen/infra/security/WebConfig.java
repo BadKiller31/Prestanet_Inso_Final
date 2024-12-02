@@ -28,7 +28,7 @@ public class WebConfig implements Filter {
 
         // Configurar varios orígenes permitidos
         String origin = request.getHeader("Origin");
-        if ("http://localhost:4200".equals(origin) || "https://prestanet-inso-front.onrender.com/".equals(origin)) {
+        if ("http://localhost:4200".equals(origin) || "https://prestanet-inso-front.onrender.com".equals(origin)) {
             response.setHeader("Access-Control-Allow-Origin", origin);
         }
 
