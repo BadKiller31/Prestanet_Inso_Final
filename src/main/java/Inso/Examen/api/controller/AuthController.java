@@ -35,21 +35,30 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
-        // Autenticación del usuario
+        if (userDTO.getUsername() == null || userDTO.getPassword() == null) {
+            return ResponseEntity.badRequest().body("Username and password are required");
+        }
+
         try {
+            // Autenticación del usuario
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword())
+                    new UsernamePasswordAuthenticationToken(
+                            userDTO.getUsername(), 
+                            userDTO.getPassword()
+                    )
             );
 
-            // Si la autenticación es exitosa, obtenemos los detalles del usuario
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            // Si la autenticación es exitosa, generamos el token
+            String token = jwtService.generateToken(authentication);
 
-            // Generamos el JWT
-            String token = jwtService.generateToken(userDetails);
+            // Retornamos el token en un objeto para facilitar la interpretación del cliente
+            return ResponseEntity.ok().body(Map.of("token", token));
 
-            return ResponseEntity.ok().body(token);  // Retornamos el token generado
-        } catch (Exception e) {
+        } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred during authentication: " + e.getMessage());
         }
     }
 
